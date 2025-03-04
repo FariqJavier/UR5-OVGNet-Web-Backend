@@ -1,7 +1,7 @@
 from fastapi import APIRouter, WebSocket, UploadFile, File, Form
-from app.services.ros import send_to_ros
-from app.services.nlp import process_text
-from app.services.speech import transcribe_audio
+from service.ros import send_to_ros
+from service.nlp import process_text
+from service.speech import transcribe_audio
 
 router = APIRouter()
 
