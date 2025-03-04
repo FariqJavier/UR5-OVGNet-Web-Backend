@@ -12,13 +12,16 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --no-cache-dir poetry
 
 # Copy project files
-COPY pyproject.toml poetry.lock /app/
+COPY ./app/pyproject.toml ./app/poetry.lock /app/
 
 # Install Python dependencies
 RUN poetry config virtualenvs.create false && poetry install --no-root --no-interaction --no-ansi
 
+# Install Spacy NLP model
+RUN python -m spacy download en_core_web_sm
+
 # Copy application files
-COPY . /app
+COPY ./app /app
 
 # Expose FastAPI port
 EXPOSE 8000
