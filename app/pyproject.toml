@@ -6,10 +6,12 @@ authors = ["FariqJavier <fariqjavier@gmail.com>"]
 readme = "README.md"
 
 [tool.poetry.dependencies]
-python = ">=3.10.0"
+python = ">=3.10.0,<3.13"
 fastapi = "^0.115.11"
 uvicorn = "^0.34.0"
-
+websockets = "^15.0"
+spacy = "^3.8.4"
+whisper = "^1.1.10"
 
 [build-system]
 requires = ["poetry-core"]
