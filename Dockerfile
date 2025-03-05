@@ -17,6 +17,9 @@ COPY ./app/pyproject.toml ./app/poetry.lock /app/
 # Install Python dependencies
 RUN poetry config virtualenvs.create false && poetry install --no-root --no-interaction --no-ansi
 
+# Install OpenAI Whisper
+RUN pip install openai-whisper
+
 # Install Spacy NLP model
 RUN python -m spacy download en_core_web_sm
 
