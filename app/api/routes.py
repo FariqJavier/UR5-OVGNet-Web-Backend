@@ -15,15 +15,16 @@ async def health_check():
 
 @router.post("/api/text_command/")
 async def text_command(request: CommandMsg):
-    intent = process_text(request.command)
-    return {"status": "Msg sent", "command": intent}
+    text_intent = process_text(request.command)
+    return {"status": "Message sent", "command": text_intent}
     # response = await send_to_ros(intent)
     # return {"status": "sent", "command": intent, "ros_response": response}
 
 @router.post("/api/voice_command/")
-async def voice_command(file: UploadFile = File(...)):
-    text_command = await transcribe_audio(file)
-    return await text_command(text_command)
+async def voice_command(wav_file: UploadFile = File(...)):
+    voice_intent = await transcribe_audio(wav_file)
+    return {"status": "File sent", "command": voice_intent}
+    # return await text_command(voice_command)
 
 @router.websocket("/api/ws")
 async def websocket_endpoint(websocket: WebSocket):
