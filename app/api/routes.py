@@ -2,18 +2,23 @@ from fastapi import APIRouter, WebSocket, UploadFile, File, Form
 from service.ros import send_to_ros
 from service.nlp import process_text
 from service.speech import transcribe_audio
+from pydantic import BaseModel
 
 router = APIRouter()
+
+class CommandMsg (BaseModel):
+    command: str
 
 @router.get("/api/health/", tags=["Health"])
 async def health_check():
     return { "status": "ok" }
 
 @router.post("/api/text_command/")
-async def text_command(command: str = Form(...)):
-    intent = process_text(command)
-    response = await send_to_ros(intent)
-    return {"status": "sent", "command": intent, "ros_response": response}
+async def text_command(request: CommandMsg):
+    intent = process_text(request.command)
+    return {"status": "Msg sent", "command": intent}
+    # response = await send_to_ros(intent)
+    # return {"status": "sent", "command": intent, "ros_response": response}
 
 @router.post("/api/voice_command/")
 async def voice_command(file: UploadFile = File(...)):
