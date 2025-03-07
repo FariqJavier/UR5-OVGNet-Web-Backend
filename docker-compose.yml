@@ -4,8 +4,9 @@ services:
   backend:
     build: .
     container_name: fastapi_backend
-    ports:
-      - "8000:8000"
+    network_mode: "host"
+    stdin_open: true
+    tty: true
     volumes:
       - ./app:/app
     depends_on:
