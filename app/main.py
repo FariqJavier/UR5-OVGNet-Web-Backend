@@ -1,7 +1,7 @@
 from fastapi import FastAPI
-from app.api.routes import router
-from app.middleware import log_requests
-from app.config import HOST, PORT
+from api.routes import router
+from middleware import log_requests
+from config import HOST, PORT
 
 app = FastAPI()
 

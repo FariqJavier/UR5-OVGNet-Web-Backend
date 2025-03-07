@@ -1,29 +1,42 @@
 from fastapi import APIRouter, WebSocket, UploadFile, File, Form
-from app.services.ros import send_to_ros
-from app.services.nlp import process_text
-from app.services.speech import transcribe_audio
+from service.ros import send_cmd_to_ros
+from service.nlp import process_text
+from service.speech import transcribe_audio
+from pydantic import BaseModel
+from config import ROSBRIDGE_WS_URL
 
 router = APIRouter()
 
-@router.post("/text_command/")
-async def text_command(command: str = Form(...)):
-    intent = process_text(command)
-    response = await send_to_ros(intent)
-    return {"status": "sent", "command": intent, "ros_response": response}
+class CommandMsg (BaseModel):
+    command: str
 
-@router.post("/voice_command/")
-async def voice_command(file: UploadFile = File(...)):
-    text_command = await transcribe_audio(file)
-    return await text_command(text_command)
+@router.get("/api/health/", tags=["Health"])
+async def health_check():
+    return { "status": "ok" }
 
-@router.websocket("/ws")
-async def websocket_endpoint(websocket: WebSocket):
-    await websocket.accept()
-    while True:
-        try:
-            data = await websocket.receive_text()
-            response = await text_command(data)
-            await websocket.send_json(response)
-        except Exception as e:
-            await websocket.send_json({"error": str(e)})
-            break
+# Test spacy NLP
+@router.post("/api/text_command/")
+async def text_command(request: CommandMsg):
+    processed_cmd = process_text(request.command)
+    return {"Status": "Message sent", "Processed Command": processed_cmd}
+
+# Process text command through Spacy NLP then send it to ros topic /linguistic_cmd
+@router.post("/api/ros_text_command/")
+async def ros_text_command(request: CommandMsg):
+    processed_cmd = process_text(request.command)
+    return await send_cmd_to_ros(processed_cmd, ROSBRIDGE_WS_URL)
+
+# Test OpenAI Whisper
+@router.post("/api/voice_command/")
+async def voice_command(wav_file: UploadFile = File(...)):
+    text_intent = await transcribe_audio(wav_file)
+    processed_cmd = process_text(text_intent)
+    return {"Status": "File sent", "Transcribed audio to text": text_intent, "Command": processed_cmd}
+
+# Process audio WAV file through OpenAI Whisper to text command then process the text command through Spacy NLP then send it to ros topic /linguistic_cmd
+@router.post("/api/ros_voice_command/")
+async def voice_command(wav_file: UploadFile = File(...)):
+    text_intent = await transcribe_audio(wav_file)
+    processed_cmd = process_text(text_intent)
+    return await send_cmd_to_ros(processed_cmd, ROSBRIDGE_WS_URL)
+
