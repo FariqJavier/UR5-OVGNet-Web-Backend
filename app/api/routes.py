@@ -1,9 +1,10 @@
-from fastapi import APIRouter, WebSocket, UploadFile, File, Form
+from fastapi import APIRouter, WebSocket, UploadFile, File, Form, HTTPException
 from service.ros import send_cmd_to_ros
 from service.nlp import process_text
 from service.speech import transcribe_audio
 from pydantic import BaseModel
 from config import ROSBRIDGE_WS_URL
+import os
 
 router = APIRouter()
 
@@ -34,9 +35,19 @@ async def voice_command(wav_file: UploadFile = File(...)):
     return {"Status": "File sent", "Transcribed audio to text": text_intent, "Command": processed_cmd}
 
 # Process audio WAV file through OpenAI Whisper to text command then process the text command through Spacy NLP then send it to ros topic /linguistic_cmd
+# @router.post("/api/ros_voice_command/")
+# async def voice_command(wav_file: UploadFile = File(...)):
+#     text_intent = await transcribe_audio(wav_file)
+#     processed_cmd = process_text(text_intent)
+#     return await send_cmd_to_ros(processed_cmd, ROSBRIDGE_WS_URL)
 @router.post("/api/ros_voice_command/")
 async def voice_command(wav_file: UploadFile = File(...)):
-    text_intent = await transcribe_audio(wav_file)
-    processed_cmd = process_text(text_intent)
-    return await send_cmd_to_ros(processed_cmd, ROSBRIDGE_WS_URL)
+    print(f"Received file: {wav_file.filename}, content type: {wav_file.content_type}")
 
+    try:
+        text_intent = await transcribe_audio(wav_file)
+        processed_cmd = process_text(text_intent)
+        return await send_cmd_to_ros(processed_cmd, ROSBRIDGE_WS_URL)
+    except Exception as e:
+        print(f"Transcription failed: {e}")
+        raise HTTPException(status_code=500, detail=f"Transcription failed: {str(e)}")
