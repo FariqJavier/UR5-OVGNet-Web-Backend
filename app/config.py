@@ -5,7 +5,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ROS settings
-ROSBRIDGE_WS_URL = os.getenv("ROSBRIDGE_WS_URL", "ws://localhost:9090")
+ROSBRIDGE_WS_URL = os.getenv("ROSBRIDGE_WS_URL", "ws://10.4.89.73:9090")
 
 # Whisper model settings
 WHISPER_MODEL_TYPE = os.getenv("WHISPER_MODEL_TYPE", "base")
